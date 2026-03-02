@@ -15,20 +15,20 @@
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
 
-        version = "0.271.0";
+        version = "0.272.0";
 
         src = pkgs.fetchFromGitHub {
           owner = "planetscale";
           repo = "cli";
           rev = "v${version}";
-          hash = "sha256-VSHeHruqGD2cgF5XYlyeGYhcSBlGIC+lgO6Qqrhtb0Q=";
+          hash = "sha256-1Ee8oPB2TxIrGfPVee4ptVq4eTpkVAStaXQ42q685Wk=";
         };
       in {
-        packages.default = pkgs.buildGoModule {
+        packages.default = pkgs.buildGoModule rec {
           pname = "pscale";
           inherit version src;
 
-          vendorHash = "sha256-DbxciJXGcjQJZUmCbK8mFAtmKzRkWcMCWgU0SBrKTH0=";
+          vendorHash = "sha256-B+tvd/SazfNn1u0pa/uWOPxpFCbX9i7jNoANKJAVVnQ";
 
           subPackages = ["cmd/pscale"];
 
@@ -42,10 +42,10 @@
 
           env.CGO_ENABLED = "0";
 
-          meta = {
+          meta = with pkgs.lib; {
             description = "The PlanetScale CLI";
             homepage = "https://planetscale.com";
-            license = pkgs.lib.licenses.asl20;
+            license = licenses.asl20;
             mainProgram = "pscale";
           };
         };

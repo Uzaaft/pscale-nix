@@ -3,6 +3,9 @@ set -euo pipefail
 
 FLAKE="flake.nix"
 
+# Portable in-place sed (macOS + Linux)
+sedi() { sed "$1" "$2" > "$2.tmp" && mv "$2.tmp" "$2"; }
+
 # Fetch latest release tag from GitHub
 latest=$(curl -fsSL https://api.github.com/repos/planetscale/cli/releases/latest | jq -r '.tag_name')
 latest_version="${latest#v}"
@@ -18,21 +21,19 @@ fi
 echo "Updating pscale: v${current} → v${latest_version}"
 
 # Compute new source hash
-src_hash=$(nix-prefetch-url --unpack \
-  "https://github.com/planetscale/cli/archive/refs/tags/v${latest_version}.tar.gz" 2>/dev/null)
+src_hash=$(nix-prefetch-url --unpack "https://github.com/planetscale/cli/archive/refs/tags/v${latest_version}.tar.gz" 2>/dev/null)
 src_sri=$(nix hash convert --hash-algo sha256 --to sri "$src_hash")
 
 # Update version and source hash
-sed -i "s|version = \"${current}\"|version = \"${latest_version}\"|" "$FLAKE"
-sed -i "s|hash = \"sha256-[^\"]*\"|hash = \"${src_sri}\"|" "$FLAKE"
+sedi "s|version = \"${current}\"|version = \"${latest_version}\"|" "$FLAKE"
+sedi "s|hash = \"sha256-[^\"]*\"|hash = \"${src_sri}\"|" "$FLAKE"
 
-# Temporarily set vendorHash to empty to trigger the hash mismatch
-sed -i 's|vendorHash = "sha256-[^"]*"|vendorHash = ""|' "$FLAKE"
+# Temporarily clear vendorHash to trigger hash mismatch
+sedi 's|vendorHash = "sha256-[^"]*"|vendorHash = ""|' "$FLAKE"
 
-# Stage so nix can see changes
 git add "$FLAKE"
 
-# Extract correct vendor hash from the build failure
+# Extract correct vendor hash from build failure
 vendor_hash=$(nix build .#default 2>&1 | grep 'got:' | awk '{print $2}') || true
 
 if [[ -z "$vendor_hash" ]]; then
@@ -40,10 +41,9 @@ if [[ -z "$vendor_hash" ]]; then
   exit 1
 fi
 
-sed -i "s|vendorHash = \"\"|vendorHash = \"${vendor_hash}\"|" "$FLAKE"
+sedi "s|vendorHash = \"\"|vendorHash = \"${vendor_hash}\"|" "$FLAKE"
 git add "$FLAKE"
 
-# Verify the build succeeds
 echo "Building pscale v${latest_version}..."
 nix build .#default
 
