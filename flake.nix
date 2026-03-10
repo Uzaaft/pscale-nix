@@ -14,21 +14,22 @@
     flake-utils.lib.eachDefaultSystem (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
+        buildGoModule = pkgs.buildGo126Module;
 
-        version = "0.272.0";
+        version = "0.274.0";
 
         src = pkgs.fetchFromGitHub {
           owner = "planetscale";
           repo = "cli";
           rev = "v${version}";
-          hash = "sha256-1Ee8oPB2TxIrGfPVee4ptVq4eTpkVAStaXQ42q685Wk=";
+          hash = "sha256-N3RARfCcnw/sbLCnvm3D76Z2MIWEv4hJoTfCQwUzEoU=";
         };
       in {
-        packages.default = pkgs.buildGoModule rec {
+        packages.default = buildGoModule rec {
           pname = "pscale";
           inherit version src;
 
-          vendorHash = "sha256-B+tvd/SazfNn1u0pa/uWOPxpFCbX9i7jNoANKJAVVnQ";
+          vendorHash = "sha256-h3w9M0Mf87nSngmvimvt8zyhPUZSysKMlnngYsL/Upw=";
 
           subPackages = ["cmd/pscale"];
 
