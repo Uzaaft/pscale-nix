@@ -16,20 +16,20 @@
         pkgs = nixpkgs.legacyPackages.${system};
         buildGoModule = pkgs.buildGo126Module;
 
-        version = "0.274.0";
+        version = "0.276.0";
 
         src = pkgs.fetchFromGitHub {
           owner = "planetscale";
           repo = "cli";
           rev = "v${version}";
-          hash = "sha256-N3RARfCcnw/sbLCnvm3D76Z2MIWEv4hJoTfCQwUzEoU=";
+          hash = "sha256-J7v281WpKD4WQahfgLtGjKCg1l44scobPnPXpC5SpOs=";
         };
       in {
         packages.default = buildGoModule rec {
           pname = "pscale";
           inherit version src;
 
-          vendorHash = "sha256-h3w9M0Mf87nSngmvimvt8zyhPUZSysKMlnngYsL/Upw=";
+          vendorHash = "sha256-eQtafI1LHm8kRVFHJhjihdy2/KHKGAsyOwzsIzWVspc=";
 
           subPackages = ["cmd/pscale"];
 
